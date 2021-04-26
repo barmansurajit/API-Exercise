@@ -20,6 +20,9 @@ import javax.inject.Inject;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 @QuarkusTest
 @QuarkusTestResource(EmbeddedMongoQuarkusTestResource.class)
@@ -42,7 +45,7 @@ class PassengerResourceTest {
     }
 
     @Test
-    @DisplayName("Test - When calling POST - /people should create resource - 200")
+    @DisplayName("Test - When calling POST - /people should create a passenger resource - 200")
     void addPassenger() {
         PassengerDTO.Response.Public aPublic = new PassengerDTO.Response.Public(UUID.randomUUID(),
                 true,
@@ -58,6 +61,21 @@ class PassengerResourceTest {
                 .contentType(ContentType.JSON)
                 .post("/people")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .body("name", is("Jeff Barr"))
+                .body("sex", is("male"))
+                .body("id", is(notNullValue()))
+                .body("age", is(55));
+    }
+
+    @Test
+    @DisplayName("Test - When Calling GET - /people should return all passengers - 200 - OK")
+    void getPassengers() throws Exception {
+        given()
+                .when()
+                .get("/people")
+                .then()
+                .statusCode(200)
+                .body("$.size", greaterThan(100));
     }
 }
